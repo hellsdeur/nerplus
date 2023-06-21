@@ -36,3 +36,6 @@
 cmake-build-debug
 data
 .idea
+
+# Python
+.env

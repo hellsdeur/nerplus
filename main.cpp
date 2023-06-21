@@ -2,13 +2,12 @@
 #include <iostream>
 
 //#define MAX_ROWS 1048576
-//#define MAX_COLS 16384
-#define MAX_ROWS 1000
-#define MAX_COLS 64
+#define MAX_ROWS 10
+#define MAX_COLS 2
 
 int main() {
-    std::ifstream file("./data/data.csv");
-    char sep = ',';
+    std::ifstream file("./data/data.tsv");
+    char sep = '|';
     std::string table[MAX_ROWS][MAX_COLS];
     std::string columns[MAX_COLS];
     std::string line;
@@ -19,25 +18,33 @@ int main() {
 
     if (file.is_open()) {
         while (std::getline(file, line)) {
-            // header parsing, extract column names
-            if (r == 0) {
-                start_position = 0;
-                end_position = line.find(sep);
+            std::cout << line << '\n';
+            c = 0;                           // index of columns
+            start_position = 0;              // position to start looking for sep
+            end_position = line.find(sep); // position where sep is found
 
-                while (end_position != std::string::npos) {
-                    columns[c] = line.substr(start_position, end_position-start_position);
-                    start_position = end_position + 1;
-                    end_position = line.find(sep, start_position);
-                    c++;
-                }
+            while (end_position != std::string::npos) {
+                // extract substring from the current start until the number of character up until sep
+                std::string text = line.substr(start_position, end_position-start_position);
+
+                // store in columns if first line, store in table otherwise
+                if (r == 0)
+                    columns[c] = text;
+                else
+                    table[r][c] = text;
+
+                // start is positioned after sep, end is the next sep
+                start_position = end_position + 1;
+                end_position = line.find(sep, start_position);
+                c++;
+            }
+
+            // store last column after last sep
+            if (r == 0)
                 columns[c] = line.substr(start_position);
-            }
-            // data lines parsing, extract columns data
-            else {
-                start_position = 0;
-                end_position = line.find(sep);
-                std::cout << line << '\n' << '\n';
-            }
+            else
+                table[r][c] = line.substr(start_position);
+
             r++;
         }
         file.close();
@@ -46,6 +53,6 @@ int main() {
     }
 
     for (int i = 0; i <= c; i++) {
-        std::cout << columns[i] << '\n';
+        std::cout << columns[0] << "\n";
     }
 }
