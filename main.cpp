@@ -5,52 +5,48 @@
 #define MAX_COLS 24
 
 int main() {
-    std::ifstream file("./data/data.tsv");
-    char sep = '|';
+    std::ifstream text_file("./data/data.txt");
+    std::ifstream regex_file("./data/regex.txt");
     std::string table[MAX_COLS][MAX_ROWS];
     std::string columns[MAX_COLS];
+    std::string regex[MAX_COLS];
     std::string line;
     int r = 0;  // number of rows
     int c = 0;  // number of columns
-    size_t start_position;
-    size_t end_position;
 
-    if (file.is_open()) {
-        while (std::getline(file, line) && r < MAX_ROWS) {
-            c = 0;                            // index of columns
-            start_position = 0;               // position to start looking for sep
-            end_position = line.find(sep); // position where sep is found
+    columns[0] = "text";
 
-            while (end_position != std::string::npos) {
-                // extract substring from the current start until the number of character up until sep
-                std::string text = line.substr(start_position, end_position-start_position);
-
-                // store in columns if first line, store in table otherwise
-                if (r == 0)
-                    columns[c] = text;
-                else
-                    table[c][r] = text;
-
-                // start is positioned after sep, end is the next sep
-                start_position = end_position + 1;
-                end_position = line.find(sep, start_position);
-                c++;
-            }
-
-            // store last column after last sep
-            if (r == 0)
-                columns[c] = line.substr(start_position);
-            else
-                table[c][r] = line.substr(start_position);
-
+    if (text_file.is_open()) {
+        while (std::getline(text_file, line) && r < MAX_ROWS) {
+            table[0][r] = line;
             r++;
         }
-        file.close();
+        text_file.close();
     } else {
-        std::cout << "Unable to open file";
+        std::cout << "Unable to open file.\n";
     }
 
-    for (int i = 0; i < MAX_ROWS; i++) {
+    if (regex_file.is_open()) {
+        while (std::getline(regex_file, line) && c < MAX_COLS) {
+            if (c % 2 == 0) {
+                columns[c/2] = line;
+            } else {
+                regex[c/2] = line;
+            }
+            c++;
+        }
+        c = c / 2;
+        regex_file.close();
+    } else {
+        std::cout << "Unable to open file.\n";
+    }
+
+    for (int i = 0; i < c; i++) {
+        std::cout << columns[i] << ": " << regex[i] << "\n";
+    }
+    std::cout << "\n";
+
+    for (int i = 0; i < 10; i++) {
         std::cout << table[0][i] << "\n\n";
     }
 }
