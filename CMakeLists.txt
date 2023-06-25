@@ -7,4 +7,4 @@ include_directories(.)
 
 add_executable(nerplus
         Table.cpp
-        Table.h main.cpp src/table.h src/table.h)
+        Table.h main.cpp src/table.h src/table.h src/pbar.cpp src/pbar.h)
