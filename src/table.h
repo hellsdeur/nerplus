@@ -7,10 +7,8 @@
 #include <regex>
 #include <omp.h>
 
-#define THREAD_NUM 4
-
-#define MAX_ROWS 8192
-#define MAX_COLS 24
+#define MAX_ROWS 10000
+#define MAX_COLS 21
 
 class Table {
 public:
@@ -142,7 +140,7 @@ inline std::string Table::match(const std::string& text, const std::string& patt
     std::string result;
 
     if (multivariate) {
-        std::string sep = "|";
+        std::string sep = "£";
         bool found_match = false;
 
         auto it = text.begin();
