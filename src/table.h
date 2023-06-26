@@ -5,9 +5,10 @@
 #include <fstream>
 #include <iostream>
 #include <regex>
+#include <algorithm>
 #include <omp.h>
 
-#define MAX_ROWS 10000
+#define MAX_ROWS 300
 #define MAX_COLS 21
 
 class Table {
@@ -36,6 +37,7 @@ public:
     void print_regex_maps();
     void write_csv(const std::string& csv_filename, const std::string& sep);
     static std::string match(const std::string& text, const std::string& pattern, bool multivariate);
+    void count_matches();
 };
 
 inline void Table::load_text() {
@@ -43,6 +45,7 @@ inline void Table::load_text() {
 
     if (text_file.is_open()) {
         while (std::getline(text_file, this->line) && this->r < MAX_ROWS) {
+            std::transform(this->line.begin(), this->line.end(), this->line.begin(), ::toupper);
             this->data[0][this->r] = this->line;
             this->r++;
         }
@@ -159,6 +162,19 @@ inline std::string Table::match(const std::string& text, const std::string& patt
     }
 
     return result;
+}
+
+inline void Table::count_matches() {
+
+    for (int i = 1; i < this->c; i++) {
+        int counter = 0;
+        for (int j = 0; j < this->r; j++) {
+            if (this->data[i][j].size() > 0) {
+                counter++;
+            }
+        }
+        std::cout << "Column " + this->columns[i] + ": " + std::to_string(counter) + " matches.\n";
+    }
 }
 
 #endif //NERPLUS_TABLE_H

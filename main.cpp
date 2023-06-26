@@ -1,9 +1,9 @@
 #include <iostream>
+#include <time.h>
 #include "src/table.h"
-#include <omp.h>
-
 
 int main(int argc, char* argv[]) {
+    // get necessary filenames
     std::string text_filename;
     std::string regex_filename;
 
@@ -14,38 +14,27 @@ int main(int argc, char* argv[]) {
         std::cout << "Please, enter a text file and a regex file as parameters.\n";
         return 0;
     }
-    double start = omp_get_wtime();
+
+    // start of sequential processing
+    clock_t begin = clock();
 
     Table table = Table(text_filename, regex_filename);
 
-//    table.print_regex_maps();
-
-//    table.print_text(0, 10);
-    omp_set_num_threads(1);
-
-    #pragma omp parallel
-    {
-    #pragma omp for
-        for (int i = 0; i < table.r; i++) {
-            for (int j = 1; j < table.c; j++) {
-                table.data[j][i] = table.match(table.data[0][i], table.regex[j]);
-            }
-
+    for (int i = 0; i < table.r; i++) {
+        for (int j = 1; j < table.c; j++) {
+            table.data[j][i] = table.match(table.data[0][i], table.regex[j]);
         }
-        std::cout << "Thread " + std::to_string(omp_get_thread_num()) + " terminou a execução \n";
     }
 
-    double end = omp_get_wtime();
+    clock_t end = clock();
 
-//    for (int i = 0; i < table.c; i++) {
-//        std::cout << table.columns[i] << "\n";
-//    }
+    double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
 
+    std::cout << "Execution time: " + std::to_string(time_spent);
 
-    table.write_csv("./data/result_parallel.csv");
+    table.write_csv("./data/result_sequential.csv");
 
-    std::cout << "Tempo de execução: " + std::to_string((end-start));
-
+    table.count_matches();
 
     return 0;
 }
