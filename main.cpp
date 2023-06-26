@@ -15,10 +15,11 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
+    // loading data
+    Table table = Table(text_filename, regex_filename);
+
     // start of sequential processing
     clock_t begin = clock();
-
-    Table table = Table(text_filename, regex_filename);
 
     for (int i = 0; i < table.r; i++) {
         for (int j = 1; j < table.c; j++) {
@@ -28,12 +29,12 @@ int main(int argc, char* argv[]) {
 
     clock_t end = clock();
 
+    // end of sequential processing
     double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
 
+    // output
     std::cout << "Execution time: " + std::to_string(time_spent);
-
     table.write_csv("./data/result_sequential.csv");
-
     table.count_matches();
 
     return 0;

@@ -8,7 +8,7 @@
 #include <algorithm>
 #include <omp.h>
 
-#define MAX_ROWS 300
+#define MAX_ROWS 1000
 #define MAX_COLS 21
 
 class Table {

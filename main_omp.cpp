@@ -1,10 +1,8 @@
 #include <iostream>
-#include "src/table.h"
 #include <omp.h>
-
+#include "src/table.h"
 
 int main(int argc, char* argv[]) {
-
     // get necessary filenames
     std::string text_filename;
     std::string regex_filename;
@@ -16,9 +14,12 @@ int main(int argc, char* argv[]) {
         std::cout << "Please, enter a text file and a regex file as parameters.\n";
         return 0;
     }
-    double start = omp_get_wtime();
 
+    // loading data
     Table table = Table(text_filename, regex_filename);
+
+    // start of parallel processing
+    double begin = omp_get_wtime();
 
     omp_set_num_threads(4);
 
@@ -35,10 +36,12 @@ int main(int argc, char* argv[]) {
 
     double end = omp_get_wtime();
 
+    // end of sequential processing
+    double time_spent = end - begin;
+
+    // output
+    std::cout << "Execution time: " + std::to_string(time_spent);
     table.write_csv("./data/result_parallel_omp.csv");
-
-    std::cout << "Execution time: " + std::to_string((end-start));
-
     table.count_matches();
 
     return 0;
