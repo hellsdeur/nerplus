@@ -20,36 +20,48 @@ int main(int argc, char* argv[]) {
 
     // start of parallel processing
 
+    double begin_total = MPI_Wtime();
+    double begin_proc = MPI_Wtime();
 
     MPI::Init(argc, argv);
     int size = MPI::COMM_WORLD.Get_size();
     int process_rank = MPI::COMM_WORLD.Get_rank();
 
-//    printf("Hello World from process %d of %d\n", process_rank, size);
 
-    double begin = MPI_Wtime();
+    int div = MAX_ROWS/size;
+    if ((div*size) < MAX_ROWS)
+        div++;
 
-    int div = table.r/size;
+//    printf("div %d\n", div);
 
-    for (int i = process_rank*div; i < (process_rank+1)*div; i++) {
+
+
+    for (int i = process_rank*div; ((i < (process_rank+1)*div) && (i <MAX_ROWS)); i++) {
         for (int j = 1; j < table.c; j++) {
             table.data[j][i] = table.match(table.data[0][i], table.regex[j]);
         }
     }
 
-    if (process_rank == 0) {
+    double end_proc = MPI_Wtime();
+    double begin_com = MPI_Wtime();
 
-        for (int i = (process_rank+1)*div; i < table.r; i++) {
+    if (process_rank == 0) {
+        int source;
+
+
+        for (int i = (process_rank+1)*div; i < MAX_ROWS; i++) {
             for (int j = 1; j < table.c; j++) {
+                source = i/div;
+//                printf("process %d i =  %d, j = %d, from=%d tag %d \n", process_rank, i , j, source, (i*100+j));
                 MPI::Status status;
-                MPI::COMM_WORLD.Probe(1, (i*100+j), status);
+                MPI::COMM_WORLD.Probe(source, (i*100+j), status);
                 int l = status.Get_count(MPI::CHAR);
                 char *buf = new char[l];
-                MPI::COMM_WORLD.Recv(buf, l, MPI::CHAR, 1, (i*100+j), status);
-                std::string bla1(buf, l);
 
-//                std::cout << bla1 + '\n';
-                table.data[j][i] = bla1;
+                MPI::COMM_WORLD.Recv(buf, l, MPI::CHAR, source, (i*100+j), status);
+                std::string temp(buf, l);
+
+                table.data[j][i] = temp;
                 delete [] buf;
         }
     }
@@ -57,31 +69,35 @@ int main(int argc, char* argv[]) {
 
     }
     else{
-        for (int i = process_rank*div; i < (process_rank+1)*div; i++)
-            for (int j = 1; j < table.c; j++)
-            MPI::COMM_WORLD.Send(table.data[j][i].c_str(), table.data[j][i].length(), MPI::CHAR, 0, (i*100+j));
+        for (int i = process_rank*div; ((i < (process_rank+1)*div) && (i <MAX_ROWS)); i++)
+            for (int j = 1; j < table.c; j++) {
+//                printf("process %d i =  %d, j = %d, to=%d, tag %d\n", process_rank, i , j, 0, (i * 100 + j));
+
+                MPI::COMM_WORLD.Send(table.data[j][i].c_str(), table.data[j][i].length(), MPI::CHAR, 0, (i * 100 + j));
+            }
 
     }
+    double end_com = MPI_Wtime();
 
+    double end_total = MPI_Wtime();
 
 
     MPI::Finalize();
 
-    double end = MPI_Wtime();
 
     // end of sequential processing
-    double time_spent = end - begin;
+    double time_spent_total = end_total - begin_total;
+    double time_spent_proc = end_proc - begin_proc;
+    double time_spent_com = end_com - begin_com;
 
     // output
     if (process_rank==0){
-        std::cout << "Execution time: " + std::to_string(time_spent) + "\n";
+        printf("Execution time: %f\n", time_spent_total);
+        printf("Communication time: %f\n", time_spent_com);
+        printf("Processing time: %f\n", time_spent_proc);
+
         table.write_csv("./data/result_parallel_mpi.csv");
         table.count_matches();
-
-//        char a[] = { 'C', 'O', 'D', 'E' };
-//        table.data[2][999] = a;
-//        std::cout << table.data[2][999];
-
 
     }
 
