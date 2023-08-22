@@ -7,7 +7,7 @@ int main(int argc, char* argv[]) {
     std::string text_filename;
     std::string regex_filename;
 
-    if (argc == 3) {
+    if (argc >= 3) {
         text_filename = argv[1];
         regex_filename = argv[2];
     } else {
@@ -32,7 +32,7 @@ int main(int argc, char* argv[]) {
     if ((div*size) < MAX_ROWS)
         div++;
 
-//    printf("div %d\n", div);
+//    printf("Número de processos %d\ndiv %d\n", size, div);
 
 
 

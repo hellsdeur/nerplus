@@ -7,7 +7,7 @@ int main(int argc, char* argv[]) {
     std::string text_filename;
     std::string regex_filename;
 
-    if (argc == 3) {
+    if (argc >= 3) {
         text_filename = argv[1];
         regex_filename = argv[2];
     } else {
@@ -33,7 +33,7 @@ int main(int argc, char* argv[]) {
     double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
 
     // output
-    std::cout << "Execution time: " + std::to_string(time_spent);
+    std::cout << "Execution time: " + std::to_string(time_spent) + "\n";
     table.write_csv("./data/result_sequential.csv");
     table.count_matches();
 
